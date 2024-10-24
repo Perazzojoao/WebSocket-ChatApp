@@ -104,3 +104,15 @@ func (w *WsServer) HandleBroadcast(ws *websocket.Conn) {
 		w.Broadcast(string(msg), ws)
 	}
 }
+
+func (w *WsServer) ReadMessage(ws *websocket.Conn, msgChan chan []byte, done chan struct{}) {
+	defer close(done)
+	for {
+		_, msg, err := ws.ReadMessage()
+		if err != nil {
+			log.Println(err)
+			break
+		}
+		msgChan <- msg
+	}
+}
