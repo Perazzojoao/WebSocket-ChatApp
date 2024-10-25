@@ -5,10 +5,11 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Perazzojoao/go-safemap"
 	"github.com/gorilla/websocket"
 )
 
-type connMap map[*websocket.Conn]bool
+type connMap safemap.Map[*websocket.Conn, bool]
 
 type WsServer struct {
 	upgrader *websocket.Upgrader
@@ -30,7 +31,7 @@ func NewWsServer(config ...websocket.Upgrader) *WsServer {
 	}
 	return &WsServer{
 		upgrader: &upgrader,
-		clients:  make(connMap),
+		clients:  safemap.New[*websocket.Conn, bool](),
 	}
 }
 
@@ -39,7 +40,7 @@ func (w *WsServer) Upgrade(wr http.ResponseWriter, r *http.Request) (*websocket.
 }
 
 func (w *WsServer) HandleConn(ws *websocket.Conn) {
-	w.clients[ws] = true
+	w.clients.Set(ws, true)
 	defer ws.Close()
 
 	for {
@@ -69,23 +70,23 @@ func (w *WsServer) Broadcast(msg string, conn ...*websocket.Conn) {
 		myConn = conn[0]
 	}
 
-	for client := range w.clients {
+	w.clients.ForEach(func(client *websocket.Conn, _ bool) {
 		if myConn != nil && client == myConn {
-			continue
+			return
 		}
 		go func(client *websocket.Conn) {
 			err := client.WriteMessage(websocket.TextMessage, []byte(msg))
 			if err != nil {
 				log.Println(err)
 				client.Close()
-				delete(w.clients, client)
+				w.clients.Delete(client)
 			}
 		}(client)
-	}
+	})
 }
 
 func (w *WsServer) HandleBroadcast(ws *websocket.Conn) {
-	w.clients[ws] = true
+	w.clients.Set(ws, true)
 	defer ws.Close()
 
 	for {
@@ -106,6 +107,7 @@ func (w *WsServer) HandleBroadcast(ws *websocket.Conn) {
 }
 
 func (w *WsServer) ReadMessage(ws *websocket.Conn, msgChan chan []byte, done chan struct{}) {
+	w.clients.Set(ws, true)
 	defer close(done)
 	for {
 		_, msg, err := ws.ReadMessage()

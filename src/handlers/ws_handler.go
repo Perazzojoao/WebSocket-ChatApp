@@ -46,5 +46,17 @@ func (h *WsHandler) Broadcast(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	go h.ws.HandleBroadcast(conn)
+	// go h.ws.HandleBroadcast(conn)
+	msg := make(chan []byte)
+	done := make(chan struct{})
+	go h.ws.ReadMessage(conn, msg, done)
+
+	for {
+		select {
+		case message := <-msg:
+			go h.ws.Broadcast(string(message), conn)
+		case <-done:
+			return
+		}
+	}
 }

@@ -1,3 +1,5 @@
+github.com/Perazzojoao/go-safemap v1.0.0 h1:8NY81cte774zjgzL4C2uu3I14S92h3W2qupR9vmwYBE=
+github.com/Perazzojoao/go-safemap v1.0.0/go.mod h1:ss8QElG//OVysFV2S/ts/2AiUQuEgJD/nZdr2XBEmTs=
 github.com/go-chi/chi/v5 v5.1.0 h1:acVI1TYaD+hhedDJ3r54HyA6sExp3HfXq7QWEEY/xMw=
 github.com/go-chi/chi/v5 v5.1.0/go.mod h1:DslCQbL2OYiznFReuXYUmQ2hGd1aDpCnlMNITLSKoi8=
 github.com/gorilla/websocket v1.5.3 h1:saDtZ6Pbx/0u+bgYQ3q96pZgCzfhKXGPqt7kZ72aNNg=
